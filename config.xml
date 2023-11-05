@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>dnkpdforderbarcode</name>
+	<displayName><![CDATA[DNK The order reference barcode in the delivery slips and invoice.]]></displayName>
+	<version><![CDATA[1.0.0]]></version>
+	<description><![CDATA[Show order reference by EAN 128 barcode in the delivery slips and invoice.]]></description>
+	<author><![CDATA[DNK Soft]]></author>
+	<tab><![CDATA[market_place]]></tab>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+</module>
