@@ -189,10 +189,9 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
         if (!$legal_free_text) {
             $legal_free_text = Configuration::get('PS_INVOICE_LEGAL_FREE_TEXT', (int) Context::getContext()->language->id, null, (int) $this->order->id_shop);
         }
+        $order_code = '';
         if (Configuration::get('DNKPDFORDERBARCODE_INVOICE') && ($dnkpdforderbarcode = Module::getInstanceByName('dnkpdforderbarcode')) && Validate::isLoadedObject($dnkpdforderbarcode)) {
             $order_code = $dnkpdforderbarcode->getEanImageBase64($this->order->reference);
-        } else {
-            $order_code = '';
         }
         $data = [
             'order' => $this->order,

@@ -67,10 +67,9 @@ class HTMLTemplateDeliverySlip extends HTMLTemplateDeliverySlipCore
         }
         $sorter = new Sorter();
         $order_details = $sorter->natural($order_details, Sorter::ORDER_DESC, 'product_reference', 'product_supplier_reference');
+        $order_code = '';
         if (Configuration::get('DNKPDFORDERBARCODE_DELIVERY') && ($dnkpdforderbarcode = Module::getInstanceByName('dnkpdforderbarcode')) && Validate::isLoadedObject($dnkpdforderbarcode)) {
             $order_code = $dnkpdforderbarcode->getEanImageBase64($this->order->reference);
-        } else {
-            $order_code = '';
         }
         $this->smarty->assign([
             'order' => $this->order,
