@@ -1,48 +1,23 @@
 {*
-* 2007-2023 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author    PrestaShop SA <contact@prestashop.com>
-*  @copyright 2007-2023 PrestaShop SA
-*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
+ * NOTICE OF LICENSE
+ *
+ * This file is not open source! Each license that you purchased is only available for 1 website only.
+ * If you want to use this file on more websites (or projects), you need to purchase additional licenses.
+ * You are not allowed to redistribute, resell, lease, license, sub-license or offer our resources to any third party.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please contact us for extra customization service at an affordable price
+ *
+ * @author DNK Soft <i@dnk.software>
+ * @copyright  2021-2022 DNK Soft
+ * @license    Valid for 1 website (or project) for each purchase of license
 *}
 
 <div class="panel">
-	<h3><i class="icon icon-credit-card"></i> {l s='DNK The order reference barcode in the delivery slips and invoice.' mod='dnkpdforderbarcode'}</h3>
-	<p>
-		<strong>{l s='Here is my new generic module!' mod='dnkpdforderbarcode'}</strong><br />
-		{l s='Thanks to PrestaShop, now I have a great module.' mod='dnkpdforderbarcode'}<br />
-		{l s='I can configure it using the following configuration form.' mod='dnkpdforderbarcode'}
-	</p>
-	<br />
-	<p>
-		{l s='This module will boost your sales!' mod='dnkpdforderbarcode'}
-	</p>
-</div>
-
-<div class="panel">
-	<h3><i class="icon icon-tags"></i> {l s='Documentation' mod='dnkpdforderbarcode'}</h3>
-	<p>
-		&raquo; {l s='You can get a PDF documentation to configure this module' mod='dnkpdforderbarcode'} :
-		<ul>
-			<li><a href="#" target="_blank">{l s='English' mod='dnkpdforderbarcode'}</a></li>
-			<li><a href="#" target="_blank">{l s='French' mod='dnkpdforderbarcode'}</a></li>
-		</ul>
-	</p>
+	<iframe src="https://dnk.software" style="width:100%;height:800px">
+		DNK Soft
+	</iframe>
 </div>

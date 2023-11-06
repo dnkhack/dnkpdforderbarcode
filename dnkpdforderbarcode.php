@@ -1,27 +1,20 @@
 <?php
 /**
- * 2007-2023 PrestaShop
- *
  * NOTICE OF LICENSE
  *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@prestashop.com so we can send you a copy immediately.
+ * This file is not open source! Each license that you purchased is only available for 1 website only.
+ * If you want to use this file on more websites (or projects), you need to purchase additional licenses.
+ * You are not allowed to redistribute, resell, lease, license, sub-license or offer our resources to any third party.
  *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
  * versions in the future. If you wish to customize PrestaShop for your
- * needs please refer to http://www.prestashop.com for more information.
+ * needs please contact us for extra customization service at an affordable price
  *
- *  @author    PrestaShop SA <contact@prestashop.com>
- *  @copyright 2007-2023 PrestaShop SA
- *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- *  International Registered Trademark & Property of PrestaShop SA
+ * @author DNK Soft <i@dnk.software>
+ * @copyright  2021-2022 DNK Soft
+ * @license    Valid for 1 website (or project) for each purchase of license
  */
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -48,10 +41,6 @@ class Dnkpdforderbarcode extends Module
         $this->ps_versions_compliancy = ['min' => '1.7', 'max' => _PS_VERSION_];
     }
 
-    /**
-     * Don't forget to create update methods if needed:
-     * http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
-     */
     public function install()
     {
         Configuration::updateValue('DNKPDFORDERBARCODE_DELIVERY', false);
@@ -72,18 +61,17 @@ class Dnkpdforderbarcode extends Module
      */
     public function getContent()
     {
-        /*
-         * If values have been submitted in the form, process.
-         */
+        $conf = '';
         if (((bool) Tools::isSubmit('submitDnkpdforderbarcodeModule')) == true) {
             $this->postProcess();
+            $conf = $this->displayConfirmation($this->l('Saved'));
         }
 
         $this->context->smarty->assign('module_dir', $this->_path);
 
         $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
 
-        return $output . $this->renderForm();
+        return $conf . $this->renderForm() . $output;
     }
 
     /**
@@ -195,44 +183,16 @@ class Dnkpdforderbarcode extends Module
         }
     }
 
-    /**
-     * Add the CSS & JavaScript files you want to be loaded in the BO.
-     */
-    public function hookDisplayBackOfficeHeader()
-    {
-        if (Tools::getValue('configure') == $this->name) {
-            $this->context->controller->addJS($this->_path . 'views/js/back.js');
-            $this->context->controller->addCSS($this->_path . 'views/css/back.css');
-        }
-    }
-
-    /**
-     * Add the CSS & JavaScript files you want to be added on the FO.
-     */
-    public function hookHeader()
-    {
-        $this->context->controller->addJS($this->_path . '/views/js/front.js');
-        $this->context->controller->addCSS($this->_path . '/views/css/front.css');
-    }
-
-    public static function getEanImageBase64($code)
+    public function getEanImageBase64($code)
     {
 
-        $pdf = new TCPDF();
-        $pdf->AddPage();
+        $barcode = new TCPDFBarcode($code, 'C128A');
 
-        $barcode = new TCPDFBarcode('EAN128', $code);
-        $barcode->SetBarcodeType(TCPDF_BARCODE_EAN128);
-        $barcode->SetSize(100);
-        $barcode->SetColor('black', 'white');
+        $img = $barcode->getBarcodePngData();
+        $file = Tools::hash($code) . '.png';
+        file_put_contents($this->local_path. 'views/img/barcodes/' . $file, $img);
 
-        $pdf->Image($barcode->GetImage(), 0, 0, 200, 200);
-
-        $pdf->Output('example.pdf', 'F');
-
-        $base64 = base64_encode($pdf->GetImageBlob());
-
-        return $base64;
+        return $this->_path. 'views/img/barcodes/' . $file;
     }
 
 }

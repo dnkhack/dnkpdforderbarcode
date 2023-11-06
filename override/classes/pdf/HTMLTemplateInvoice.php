@@ -23,39 +23,35 @@
  * @copyright Since 2007 PrestaShop SA and Contributors
  * @license   https://opensource.org/licenses/OSL-3.0 Open Software License (OSL 3.0)
  */
-
 use PrestaShop\PrestaShop\Core\Util\Sorter;
-
 /**
  * @since 1.5
  */
 class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
 {
-
+    /*
+    * module: dnkpdforderbarcode
+    * date: 2023-11-06 00:42:20
+    * version: 1.0.0
+    */
     public function getContent()
     {
         $invoiceAddressPatternRules = json_decode(Configuration::get('PS_INVCE_INVOICE_ADDR_RULES'), true);
         $deliveryAddressPatternRules = json_decode(Configuration::get('PS_INVCE_DELIVERY_ADDR_RULES'), true);
-
         $invoice_address = new Address((int) $this->order->id_address_invoice);
         $country = new Country((int) $invoice_address->id_country);
         $formatted_invoice_address = AddressFormat::generateAddress($invoice_address, $invoiceAddressPatternRules, '<br />', ' ');
-
         $delivery_address = null;
         $formatted_delivery_address = '';
         if (!empty($this->order->id_address_delivery)) {
             $delivery_address = new Address((int) $this->order->id_address_delivery);
             $formatted_delivery_address = AddressFormat::generateAddress($delivery_address, $deliveryAddressPatternRules, '<br />', ' ');
         }
-
         $customer = new Customer((int) $this->order->id_customer);
         $carrier = new Carrier((int) $this->order->id_carrier);
-
         $order_details = $this->order_invoice->getProducts();
-
         $has_discount = false;
         foreach ($order_details as $id => &$order_detail) {
-            // Find out if column 'price before discount' is required
             if ($order_detail['reduction_amount_tax_excl'] > 0) {
                 $has_discount = true;
                 $order_detail['unit_price_tax_excl_before_specific_price'] = $order_detail['unit_price_tax_excl_including_ecotax'] + $order_detail['reduction_amount_tax_excl'];
@@ -67,8 +63,6 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
                     $order_detail['unit_price_tax_excl_before_specific_price'] = (100 * $order_detail['unit_price_tax_excl_including_ecotax']) / (100 - $order_detail['reduction_percent']);
                 }
             }
-
-            // Set tax_code
             $taxes = OrderDetail::getTaxListStatic($id);
             $tax_temp = [];
             foreach ($taxes as $tax) {
@@ -83,7 +77,6 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
                     'Shop.Pdf'
                 );
             }
-
             $order_detail['order_detail_tax'] = $taxes;
             $order_detail['order_detail_tax_label'] = implode(', ', $tax_temp);
         }
@@ -91,20 +84,17 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
             $tax_temp,
             $order_detail
         );
-
         if (Configuration::get('PS_PDF_IMG_INVOICE')) {
             foreach ($order_details as &$order_detail) {
                 if ($order_detail['image'] != null) {
                     $name = 'product_mini_' . (int) $order_detail['product_id'] . (isset($order_detail['product_attribute_id']) ? '_' . (int) $order_detail['product_attribute_id'] : '') . '.jpg';
                     $path = _PS_PRODUCT_IMG_DIR_ . $order_detail['image']->getExistingImgPath() . '.jpg';
-
                     $order_detail['image_tag'] = preg_replace(
                         '/\.*' . preg_quote(__PS_BASE_URI__, '/') . '/',
                         _PS_ROOT_DIR_ . DIRECTORY_SEPARATOR,
                         ImageManager::thumbnail($path, $name, 45, 'jpg', false),
                         1
                     );
-
                     if (file_exists(_PS_TMP_IMG_DIR_ . $name)) {
                         $order_detail['image_size'] = getimagesize(_PS_TMP_IMG_DIR_ . $name);
                     } else {
@@ -114,11 +104,8 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
             }
             unset($order_detail); // don't overwrite the last order_detail later
         }
-
-        // Sort products by Reference ID (and if equals (like combination) by Supplier Reference)
         $sorter = new Sorter();
         $order_details = $sorter->natural($order_details, Sorter::ORDER_DESC, 'product_reference', 'product_supplier_reference');
-
         $cart_rules = $this->order->getCartRules();
         $free_shipping = false;
         foreach ($cart_rules as $key => $cart_rule) {
@@ -130,7 +117,6 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
                  */
                 $cart_rules[$key]['value_tax_excl'] -= $this->order_invoice->total_shipping_tax_excl;
                 $cart_rules[$key]['value'] -= $this->order_invoice->total_shipping_tax_incl;
-
                 /*
                  * Don't display cart rules that are only about free shipping and don't create
                  * a discount on products.
@@ -140,30 +126,23 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
                 }
             }
         }
-
         $product_taxes = 0;
         foreach ($this->order_invoice->getProductTaxesBreakdown($this->order) as $details) {
             $product_taxes += $details['total_amount'];
         }
-
         $product_discounts_tax_excl = $this->order_invoice->total_discount_tax_excl;
         $product_discounts_tax_incl = $this->order_invoice->total_discount_tax_incl;
         if ($free_shipping) {
             $product_discounts_tax_excl -= $this->order_invoice->total_shipping_tax_excl;
             $product_discounts_tax_incl -= $this->order_invoice->total_shipping_tax_incl;
         }
-
         $products_after_discounts_tax_excl = $this->order_invoice->total_products - $product_discounts_tax_excl;
         $products_after_discounts_tax_incl = $this->order_invoice->total_products_wt - $product_discounts_tax_incl;
-
         $shipping_tax_excl = $free_shipping ? 0 : $this->order_invoice->total_shipping_tax_excl;
         $shipping_tax_incl = $free_shipping ? 0 : $this->order_invoice->total_shipping_tax_incl;
         $shipping_taxes = $shipping_tax_incl - $shipping_tax_excl;
-
         $wrapping_taxes = $this->order_invoice->total_wrapping_tax_incl - $this->order_invoice->total_wrapping_tax_excl;
-
         $total_taxes = $this->order_invoice->total_paid_tax_incl - $this->order_invoice->total_paid_tax_excl;
-
         $footer = [
             'products_before_discounts_tax_excl' => $this->order_invoice->total_products,
             'product_discounts_tax_excl' => $product_discounts_tax_excl,
@@ -183,49 +162,38 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
             'total_paid_tax_excl' => $this->order_invoice->total_paid_tax_excl,
             'total_paid_tax_incl' => $this->order_invoice->total_paid_tax_incl,
         ];
-
         foreach ($footer as $key => $value) {
             $footer[$key] = Tools::ps_round($value, Context::getContext()->getComputingPrecision(), $this->order->round_mode);
         }
-
         /*
          * Need the $round_mode for the tests.
          */
         switch ($this->order->round_type) {
             case Order::ROUND_TOTAL:
                 $round_type = 'total';
-
                 break;
             case Order::ROUND_LINE:
                 $round_type = 'line';
-
                 break;
             case Order::ROUND_ITEM:
                 $round_type = 'item';
-
                 break;
             default:
                 $round_type = 'line';
-
                 break;
         }
-
         $display_product_images = Configuration::get('PS_PDF_IMG_INVOICE');
         $tax_excluded_display = Group::getPriceDisplayMethod($customer->id_default_group);
-
         $layout = $this->computeLayout(['has_discount' => $has_discount]);
-
         $legal_free_text = Hook::exec('displayInvoiceLegalFreeText', ['order' => $this->order]);
         if (!$legal_free_text) {
             $legal_free_text = Configuration::get('PS_INVOICE_LEGAL_FREE_TEXT', (int) Context::getContext()->language->id, null, (int) $this->order->id_shop);
         }
-
-        if (Configuration::get('DNKPDFORDERBARCODE_DELIVERY') && ($dnkpdforderbarcode = Module::getInstanceByName('dnkpdforderbarcode')) && Validate::isLoadedObject($dnkpdforderbarcode)) {
-            $order_code = $dnkpdforderbarcode::getEanImageBase64($this->order->reference);
+        if (Configuration::get('DNKPDFORDERBARCODE_INVOICE') && ($dnkpdforderbarcode = Module::getInstanceByName('dnkpdforderbarcode')) && Validate::isLoadedObject($dnkpdforderbarcode)) {
+            $order_code = $dnkpdforderbarcode->getEanImageBase64($this->order->reference);
         } else {
             $order_code = '';
         }
-
         $data = [
             'order' => $this->order,
             'order_invoice' => $this->order_invoice,
@@ -244,15 +212,12 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
             'ps_price_compute_precision' => Context::getContext()->getComputingPrecision(),
             'round_type' => $round_type,
             'legal_free_text' => $legal_free_text,
-            'barcode' => $order_code,
+            'order_barcode' => $order_code,
         ];
-
         if (Tools::getValue('debug')) {
             die(json_encode($data));
         }
-
         $this->smarty->assign($data);
-
         $tpls = [
             'style_tab' => $this->smarty->fetch($this->getTemplate('invoice.style-tab')),
             'addresses_tab' => $this->smarty->fetch($this->getTemplate('invoice.addresses-tab')),
@@ -265,7 +230,6 @@ class HTMLTemplateInvoice extends HTMLTemplateInvoiceCore
             'shipping_tab' => $this->smarty->fetch($this->getTemplate('invoice.shipping-tab')),
         ];
         $this->smarty->assign($tpls);
-
-        return $this->smarty->fetch($this->getTemplateByCountry($country->iso_code));
+        return $this->smarty->fetch('module:dnkpdforderbarcode/views/templates/hook/invoice.tpl');
     }
 }
